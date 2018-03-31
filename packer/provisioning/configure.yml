@@ -14,7 +14,7 @@
     - name: Configure hostname
       command: "{{ chroot_exec }} echo 'host01' > /etc/hostname"
     - name: Configure /etc/hosts
-      shell: "{{ chroot_exec }} printf '127.0.0.1	localhost\n::1		localhost\n127.0.1.1	host01.localdomain	host01\n' >> /etc/hosts"
+      shell: "{{ chroot_exec }} printf '127.0.0.1   localhost\n::1      localhost\n127.0.1.1    host01.localdomain  host01\n' >> /etc/hosts"
     - name: Set initial root password
       shell: "{{ chroot_exec }} echo 'root:thisISaSECUREpassword12' | chpasswd"
     - name: Enable SSH as root
@@ -25,6 +25,19 @@
       command: "{{ chroot_exec }} grub-install /dev/sda"
     - name: Generate grub configuration
       command: "{{ chroot_exec }} grub-mkconfig -o /boot/grub/grub.cfg"
+    - name: Enable SystemD networking
+      command: "{{ chroot_exec }} sysctemctl enable systemd-networkd.service"
+    - name: Enable SystemD Resolved
+      command: "{{ chroot_exec }} systemctl enable systemd-resolved.service"
+    - name: Override /etc/resolv.conf with systemd stub
+      command: "{{ chroot_exec }} ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf"
+    - name: Configure basic wired networking
+      copy:
+        src: files/50-wired.network
+        dest: /mnt/etc/systemd/network/50-wired.network
+        owner: root
+        group: root
+        mode: 0644
     - name: Unmount /mnt
       command: umount /mnt
     - name: Sync changes

@@ -36,7 +36,13 @@
       },
       {
         "type": "ansible-local",
-        "playbook_file": "provisioning/configure.yml"
+        "playbook_file": "provisioning/configure.yml",
+        "playbook_dir": "provisioning"
       }
-    ]
+    ],
+  "post-processors": [
+    {
+      "type": "vagrant"
+    }
+  ]
 }
