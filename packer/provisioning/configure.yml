@@ -1,36 +1,30 @@
 - hosts: all
   gather_facts: no
-  connection: chroot
   vars:
-    ansible_host: /mnt
-    ansible_executable: arch-chroot
+    chroot_exec: arch-chroot /mnt
   tasks:
     - name: Configure localtime
-      command: ln -sf /usr/share/zoneinfo/US/Michigan /etc/localtime
+      command: "{{ chroot_exec }} ln -sf /usr/share/zoneinfo/US/Michigan /etc/localtime"
     - name: Configure locale
-      command: sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+      command: "{{ chroot_exec }} sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen"
     - name: Generate locales
-      command: locale-gen
+      command: "{{ chroot_exec }} locale-gen"
     - name: Configure locale.conf
-      shell: echo 'LANG=en_US.UTF-8' > /etc/locale.conf
+      shell: "{{ chroot_exec }} echo 'LANG=en_US.UTF-8' > /etc/locale.conf"
     - name: Configure hostname
-      command: echo 'host01' > /etc/hostname
+      command: "{{ chroot_exec }} echo 'host01' > /etc/hostname"
     - name: Configure /etc/hosts
-      shell: printf '127.0.0.1	localhost\n::1		localhost\n127.0.1.1	host01.localdomain	host01\n' >> /etc/hosts
+      shell: "{{ chroot_exec }} printf '127.0.0.1	localhost\n::1		localhost\n127.0.1.1	host01.localdomain	host01\n' >> /etc/hosts"
     - name: Set initial root password
-      shell: echo 'root:thisISaSECUREpassword12' | chpasswd
+      shell: "{{ chroot_exec }} echo 'root:thisISaSECUREpassword12' | chpasswd"
     - name: Enable SSH as root
-      command: sed -i 's/#PermitRootLogin .*$/PermitRootLogin yes/g' /etc/ssh/sshd_config
+      command: "{{ chroot_exec }} sed -i 's/#PermitRootLogin .*$/PermitRootLogin yes/g' /etc/ssh/sshd_config"
     - name: Enable sshd
-      command: systemctl enable sshd
+      command: "{{ chroot_exec }} systemctl enable sshd"
     - name: Install Grub bootloader
-      command: grub-install /dev/sda
+      command: "{{ chroot_exec }} grub-install /dev/sda"
     - name: Generate grub configuration
-      command: grub-mkconfig -o /boot/grub/grub.cfg
-
-- hosts: all
-  gather_facts: no
-  tasks:
+      command: "{{ chroot_exec }} grub-mkconfig -o /boot/grub/grub.cfg"
     - name: Unmount /mnt
       command: umount /mnt
     - name: Sync changes
