@@ -1,0 +1,21 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Syncronize time
+      command: timedatectl set-ntp true
+
+    - name: Partition root disk
+      command: parted --script /dev/sda mklabel gpt mkpart primary btrfs 0% 100% set 1 boot on
+
+    - name: Format root disk
+      command: mkfs.btrfs -L ROOTFS /dev/sda
+
+    - name: Mount root disk
+      command: mount /dev/sda1 /mnt
+
+    - name: Bootstrap new Arch disk
+      command: pacstrap /mnt base openssh
+
+    - name: Generate new fstab
+      shell: genfstab -U /mnt >> /mnt/etc/fstab
+
