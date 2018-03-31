@@ -1,2 +1,4 @@
 packer/packer_cache
 packer/output-virtualbox-iso
+.DS_Store
+*.swp
