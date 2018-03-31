@@ -14,7 +14,7 @@
       command: mount /dev/sda1 /mnt
 
     - name: Bootstrap new Arch disk
-      command: pacstrap /mnt base openssh
+      command: pacstrap /mnt base openssh python
 
     - name: Generate new fstab
       shell: genfstab -U /mnt >> /mnt/etc/fstab

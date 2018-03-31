@@ -33,6 +33,10 @@
       {
         "type": "ansible-local",
         "playbook_file": "provisioning/bootstrap.yml"
+      },
+      {
+        "type": "ansible-local",
+        "playbook_file": "provisioning/configure.yml"
       }
     ]
 }
