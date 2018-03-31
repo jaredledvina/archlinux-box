@@ -26,7 +26,8 @@
       {
         "type": "shell",
         "inline": [
-          "pacman -Syu ansible --noconfirm --noprogressbar --needed"
+          "echo 'Server = https://mirror.wdc1.us.leaseweb.net/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist",
+          "pacman -Sy ansible --noconfirm --noprogressbar --needed"
         ]
       },
       {
