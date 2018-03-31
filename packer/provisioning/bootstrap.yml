@@ -8,7 +8,7 @@
       command: parted --script /dev/sda mklabel gpt mkpart primary btrfs 0% 100% set 1 boot on
 
     - name: Format root disk
-      command: mkfs.btrfs -L ROOTFS /dev/sda
+      command: mkfs.btrfs -L ROOTFS /dev/sda1
 
     - name: Mount root disk
       command: mount /dev/sda1 /mnt
