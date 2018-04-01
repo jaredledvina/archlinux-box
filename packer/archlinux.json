@@ -52,7 +52,7 @@
     {
       "type": "vagrant",
       "output": "archlinux.box",
-      "keep_input_artifact": true
+      "keep_input_artifact": false
     }
   ]
 }

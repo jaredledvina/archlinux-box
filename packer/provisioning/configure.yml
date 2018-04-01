@@ -91,6 +91,9 @@
         owner: root
         group: root
         mode: 0644
+    - name: Install Virtualbox additions
+      command: arch-chroot /mnt pacman -S --noconfirm --noprogressbar --needed virtualbox-guest-utils-nox virtualbox-guest-modules-arch
+      when: packer_builder_type == 'virtualbox-iso'
     - name: Sync changes
       command: sync
     - name: Unmount /mnt
