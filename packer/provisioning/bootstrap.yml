@@ -4,28 +4,55 @@
     - name: Syncronize time
       command: timedatectl set-ntp true
 
+    - name: Check if disk is already partitioned
+      command: parted --script /dev/sda print 1
+      register: boot_bios
+      changed_when: false
+      failed_when: false
+
     - name: Create BIOS boot partition
       command: "{{ item }}"
       with_items:
         - parted --script /dev/sda mklabel gpt
         - parted --script /dev/sda mkpart primary 0M 1M
         - parted --script /dev/sda set 1 bios_grub on
+      when: boot_bios.rc != 0
+
+    - name: Check if disk is already partitioned
+      command: parted --script /dev/sda print 2
+      register: boot_root
+      changed_when: false
+      failed_when: false
 
     - name: Partition root disk
       command: "{{ item }}"
       with_items:
         - parted --script /dev/sda mkpart primary btrfs 1M 100%
         - parted --script /dev/sda set 2 boot on
+      when: boot_root.rc != 0
+
+    - name: Check if /dev/sda2 is already formated
+      command: df --output=fstype /dev/sda2
+      register: boot_fstype
 
     - name: Format root disk
       command: mkfs.btrfs -L ROOTFS /dev/sda2
+      when: "'btrfs' not in boot_fstype.stdout"
 
     - name: Mount root disk
-      command: mount /dev/sda2 /mnt
+      mount:
+        path: /mnt
+        src: /dev/sda2
+        state: mounted
+        fstype: btrfs
 
     - name: Bootstrap new Arch disk
-      command: pacstrap /mnt base openssh python grub
+      command: pacstrap /mnt base openssh python grub sudo
+      args:
+        creates: /mnt/bin
 
     - name: Generate new fstab
       shell: genfstab -U /mnt >> /mnt/etc/fstab
+      args:
+        creates: /mnt/etc/fstab
 

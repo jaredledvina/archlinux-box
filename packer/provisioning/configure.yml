@@ -1,36 +1,89 @@
 - hosts: all
-  gather_facts: no
+  connection: chroot
   vars:
-    chroot_exec: arch-chroot /mnt
+    ansible_host: /mnt
+  gather_facts: no
   tasks:
     - name: Configure localtime
-      command: "{{ chroot_exec }} ln -sf /usr/share/zoneinfo/US/Michigan /etc/localtime"
+      file:
+        src: /usr/share/zoneinfo/US/Michigan
+        dest: /etc/localtime
+        state: link
+        force: yes
     - name: Configure locale
-      command: "{{ chroot_exec }} sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen"
+      lineinfile:
+        path: /etc/locale.gen
+        state: present
+        regexp: '^en_US.UTF-8 UTF-8'
+        line: en_US.UTF-8 UTF-8
     - name: Generate locales
-      command: "{{ chroot_exec }} locale-gen"
+      command: locale-gen
     - name: Configure locale.conf
-      shell: "{{ chroot_exec }} echo 'LANG=en_US.UTF-8' > /etc/locale.conf"
+      lineinfile:
+        path: /etc/locale.conf
+        line: LANG=en_US.UTF-8
+        create: yes
     - name: Configure hostname
-      command: "{{ chroot_exec }} echo 'host01' > /etc/hostname"
+      lineinfile:
+        path: /etc/hostname
+        line: 'host01'
+        create: yes
     - name: Configure /etc/hosts
-      shell: "{{ chroot_exec }} printf '127.0.0.1   localhost\n::1      localhost\n127.0.1.1    host01.localdomain  host01\n' >> /etc/hosts"
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+        regexp: "^{{ item }}"
+        create: yes
+      with_items:
+        - 127.0.0.1   localhost
+        - ::1      localhost
+        - 127.0.1.1    host01.localdomain  host01
     - name: Set initial root password
-      shell: "{{ chroot_exec }} echo 'root:thisISaSECUREpassword12' | chpasswd"
+      user:
+        name: root
+        password: thisISaSECUREpassword12
     - name: Enable SSH as root
-      command: "{{ chroot_exec }} sed -i 's/#PermitRootLogin .*$/PermitRootLogin yes/g' /etc/ssh/sshd_config"
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PermitRootLogin yes'
+        line: PermitRootLogin yes
+    - name: Disable sshd UseDNS
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^UseDNS no'
+        line: UseDNS no
     - name: Enable sshd
-      command: "{{ chroot_exec }} systemctl enable sshd"
-    - name: Install Grub bootloader
-      command: "{{ chroot_exec }} grub-install /dev/sda"
-    - name: Generate grub configuration
-      command: "{{ chroot_exec }} grub-mkconfig -o /boot/grub/grub.cfg"
+      command: systemctl enable sshd.service
     - name: Enable SystemD networking
-      command: "{{ chroot_exec }} systemctl enable systemd-networkd.service"
+      command: systemctl enable systemd-networkd.service
     - name: Enable SystemD Resolved
-      command: "{{ chroot_exec }} systemctl enable systemd-resolved.service"
-      #- name: Override /etc/resolv.conf with systemd stub
-      #command: "{{ chroot_exec }} ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf"
+      command: systemctl enable systemd-resolved.service
+    - name: Add vagrant user
+      user:
+        name: vagrant
+        create_home: yes
+    - name: Add insecure vagrant ssh key
+      authorized_key:
+        user: vagrant
+        key: ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ==
+        comment: vagrant insecure public key
+    - name: Passwordless SSH for vagrant user
+      lineinfile:
+        path: /etc/sudoers
+        line: 'vagrant ALL=(ALL) NOPASSWD: ALL'
+
+- hosts: all
+  tasks:
+    - name: Install Grub bootloader
+      command: "arch-chroot /mnt grub-install /dev/sda"
+    - name: Generate grub configuration
+      command: "arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg"
+    - name: Override /etc/resolv.conf with systemd stub
+      file:
+        src: /run/systemd/resolve/stub-resolv.conf
+        dest: /mnt/etc/resolv.conf
+        state: link
+        force: yes
     - name: Configure basic wired networking
       copy:
         src: files/50-wired.network
@@ -38,7 +91,9 @@
         owner: root
         group: root
         mode: 0644
-    - name: Unmount /mnt
-      command: umount /mnt
     - name: Sync changes
       command: sync
+    - name: Unmount /mnt
+      mount:
+        path: /mnt
+        state: unmounted
