@@ -8,3 +8,8 @@
 7. `vagrant ssh`
 
 To debug/step through the Packer build, use `packer build -debug archlinux.json`
+
+To force a full rebuild and reset Vagrant:
+1. `rm -rf packer/{archlinux.box,archlinux.box.checksum,output-virtualbox-iso}`
+2. `vagrant box remove --all --force archlinux-box`
+3. Follow the build steps above
