@@ -11,6 +11,7 @@
 	  "hard_drive_interface": "sata",
 	  "iso_interface": "sata",
       "guest_additions_mode": "disable",
+      "headless": true,
       "boot_wait": "3s",
       "boot_command": [
 		"<tab> cow_spacesize=2G <enter>",
