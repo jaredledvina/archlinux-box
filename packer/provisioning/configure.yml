@@ -41,12 +41,7 @@
     - name: Set initial root password
       user:
         name: root
-        password: thisISaSECUREpassword12
-    - name: Enable SSH as root
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^PermitRootLogin yes'
-        line: PermitRootLogin yes
+        password: vagrant
     - name: Disable sshd UseDNS
       lineinfile:
         path: /etc/ssh/sshd_config

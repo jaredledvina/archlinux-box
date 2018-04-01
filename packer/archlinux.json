@@ -2,20 +2,22 @@
     "variables": {
         "iso_version": "2018.03.01",
         "iso_checksum": "bfe1c58cd4396ffd5826ae5a2d71f45f873428be",
+        "iso_checksum_type": "sha1",
         "iso_mirror": "mirrors.lug.mtu.edu",
         "package_mirror": "https://mirror.wdc1.us.leaseweb.net/archlinux/$repo/os/$arch",
         "vm_memory": "4096",
         "vm_cpus": "2",
-        "ansible_extra_args": "--diff,-vv"
+        "ansible_extra_args": "--diff,-vv",
+        "root_password": "thisISaSECUREpassword12"
     },
 	"builders": [{
 	  "type": "virtualbox-iso",
 	  "guest_os_type": "ArchLinux_64",
 	  "iso_url": "https://{{ user `iso_mirror` }}/archlinux/iso/{{ user `iso_version` }}/archlinux-{{ user `iso_version` }}-x86_64.iso",
 	  "iso_checksum": "{{ user `iso_checksum` }}",
-	  "iso_checksum_type": "sha1",
+	  "iso_checksum_type": "{{ user `iso_checksum_type` }}",
 	  "ssh_username": "root",
-	  "ssh_password": "thisISaSECUREpassword12",
+	  "ssh_password": "{{ user `root_password` }}",
 	  "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
 	  "hard_drive_interface": "sata",
 	  "iso_interface": "sata",
@@ -25,7 +27,7 @@
       "boot_command": [
 		"<tab> cow_spacesize=2G <enter>",
         "<wait10><wait10>",
-        "echo 'root:thisISaSECUREpassword12' | chpasswd <enter>",
+        "echo 'root:{{ user `root_password` }}' | chpasswd <enter>",
         "systemctl start sshd <enter>"
       ],
       "vboxmanage": [
