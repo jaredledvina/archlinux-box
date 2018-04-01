@@ -1,5 +1,6 @@
 ---
 - hosts: localhost
+  gather_facts: no
   tasks:
     - name: Syncronize time
       command: timedatectl set-ntp true

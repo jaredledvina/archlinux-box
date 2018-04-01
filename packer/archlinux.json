@@ -10,6 +10,7 @@
 	  "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
 	  "hard_drive_interface": "sata",
 	  "iso_interface": "sata",
+      "guest_additions_mode": "disable",
       "boot_wait": "3s",
       "boot_command": [
 		"<tab> cow_spacesize=2G <enter>",
@@ -32,17 +33,26 @@
       },
       {
         "type": "ansible-local",
-        "playbook_file": "provisioning/bootstrap.yml"
+        "playbook_file": "provisioning/bootstrap.yml",
+        "extra_arguments": [ "--diff -vv" ]
       },
       {
         "type": "ansible-local",
         "playbook_file": "provisioning/configure.yml",
-        "playbook_dir": "provisioning"
+        "playbook_dir": "provisioning",
+        "extra_arguments": [ "--diff -vv" ]
       }
     ],
   "post-processors": [
     {
-      "type": "vagrant"
+      "type": "checksum",
+      "checksum_types": ["sha256"],
+      "output": "archlinux.box.checksum"
+    },
+    {
+      "type": "vagrant",
+      "output": "archlinux.box",
+      "keep_input_artifact": true
     }
   ]
 }

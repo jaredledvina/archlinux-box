@@ -96,4 +96,4 @@
     - name: Unmount /mnt
       mount:
         path: /mnt
-        state: unmounted
+        state: absent
