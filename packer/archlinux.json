@@ -1,9 +1,18 @@
 {
+    "variables": {
+        "iso_version": "2018.03.01",
+        "iso_checksum": "bfe1c58cd4396ffd5826ae5a2d71f45f873428be",
+        "iso_mirror": "mirrors.lug.mtu.edu",
+        "package_mirror": "https://mirror.wdc1.us.leaseweb.net/archlinux/$repo/os/$arch",
+        "vm_memory": "4096",
+        "vm_cpus": "2",
+        "ansible_extra_args": "--diff,-vv"
+    },
 	"builders": [{
 	  "type": "virtualbox-iso",
 	  "guest_os_type": "ArchLinux_64",
-	  "iso_url": "https://mirrors.lug.mtu.edu/archlinux/iso/2018.03.01/archlinux-2018.03.01-x86_64.iso",
-	  "iso_checksum": "bfe1c58cd4396ffd5826ae5a2d71f45f873428be",
+	  "iso_url": "https://{{ user `iso_mirror` }}/archlinux/iso/{{ user `iso_version` }}/archlinux-{{ user `iso_version` }}-x86_64.iso",
+	  "iso_checksum": "{{ user `iso_checksum` }}",
 	  "iso_checksum_type": "sha1",
 	  "ssh_username": "root",
 	  "ssh_password": "thisISaSECUREpassword12",
@@ -20,28 +29,28 @@
         "systemctl start sshd <enter>"
       ],
       "vboxmanage": [
-        ["modifyvm", "{{.Name}}", "--memory", "4096"],
-        ["modifyvm", "{{.Name}}", "--cpus", "2"]
+        ["modifyvm", "{{.Name}}", "--memory", "{{ user `vm_memory` }}"],
+        ["modifyvm", "{{.Name}}", "--cpus", "{{ user `vm_cpus` }}"]
       ]
 	}],
     "provisioners": [
       {
         "type": "shell",
         "inline": [
-          "echo 'Server = https://mirror.wdc1.us.leaseweb.net/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist",
+          "echo 'Server = {{ user `package_mirror` }}' > /etc/pacman.d/mirrorlist",
           "pacman -Sy ansible --noconfirm --noprogressbar --needed"
         ]
       },
       {
         "type": "ansible-local",
         "playbook_file": "provisioning/bootstrap.yml",
-        "extra_arguments": [ "--diff -vv" ]
+        "extra_arguments": "{{ user `ansible_extra_args` }}"
       },
       {
         "type": "ansible-local",
         "playbook_file": "provisioning/configure.yml",
         "playbook_dir": "provisioning",
-        "extra_arguments": [ "--diff -vv" ]
+        "extra_arguments": "{{ user `ansible_extra_args` }}"
       }
     ],
   "post-processors": [
