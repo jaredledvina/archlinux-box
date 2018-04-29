@@ -40,7 +40,7 @@
         "type": "shell",
         "inline": [
           "echo 'Server = {{ user `package_mirror` }}' > /etc/pacman.d/mirrorlist",
-          "pacman -Syyu ansible --noconfirm --noprogressbar --needed"
+          "pacman -Sy --noconfirm --noprogressbar --needed glibc ansible"
         ]
       },
       {
