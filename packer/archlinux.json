@@ -1,7 +1,7 @@
 {
     "variables": {
-        "iso_version": "2018.03.01",
-        "iso_checksum": "bfe1c58cd4396ffd5826ae5a2d71f45f873428be",
+        "iso_version": "2018.04.01",
+        "iso_checksum": "42cf488fb6cba31c57f8ad875cb03784760c4b94",
         "iso_checksum_type": "sha1",
         "iso_mirror": "mirrors.lug.mtu.edu",
         "package_mirror": "https://mirror.wdc1.us.leaseweb.net/archlinux/$repo/os/$arch",
@@ -40,7 +40,7 @@
         "type": "shell",
         "inline": [
           "echo 'Server = {{ user `package_mirror` }}' > /etc/pacman.d/mirrorlist",
-          "pacman -Sy ansible --noconfirm --noprogressbar --needed"
+          "pacman -Syyu ansible --noconfirm --noprogressbar --needed"
         ]
       },
       {
